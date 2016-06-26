@@ -54,7 +54,8 @@ var (
             'title': t.name(),
             'url': t.url(),
             'index': j+1,
-            'windowIndex': i+1
+            'windowIndex': i+1,
+			'active': j+1 === data['activeTab']
           })
         }
 
@@ -71,69 +72,78 @@ var (
 	// jsActivate <window-number> [<tab-number>] -> nil
 	jsActivate = `
 
-    ObjC.import('stdlib')
+	ObjC.import('stdlib')
 
-    function activateTab(winIdx, tabIdx) {
-      var safari = Application('Safari')
-      safari.includeStandardAdditions = true
+	var safari = Application('Safari')
+	safari.includeStandardAdditions = true
 
-      try {
-        var win = safari.windows[winIdx-1]()
-      }
-      catch (e) {
-        console.log('Invalid window: ' + winIdx)
-        $.exit(1)
-      }
+	// activateWindow | Activate Safari and bring the specified window to the front.
+	function activateWindow(winIdx) {
+	    var win = safari.windows[winIdx-1]()
 
-      if (tabIdx == 0) { // Activate window
-        safari.activate()
-        win.visible = false
-        win.visible = true
+	    if (winIdx != 1) {
+	        win.visible = false
+	        win.visible = true
+	    }
 
-        return
-      }
+	    safari.activate()
+	}
 
-      // Find tab to activate
-      try {
-        var tab = win.tabs[tabIdx-1]()
-      }
-      catch (e) {
-        console.log('Invalid tab for window ' + winIdx + ': ' + tabIdx)
-        $.exit(1)
-      }
+	// activateTab | Activate Safari, bring window to front and make specified tab active.
+	function activateTab(winIdx, tabIdx) {
 
-      // Activate window and tab if it's not the current tab
-      safari.activate()
-      win.visible = false
-      win.visible = true
+	  try {
+	    var win = safari.windows[winIdx-1]()
+	  }
+	  catch (e) {
+	    console.log('Invalid window: ' + winIdx)
+	    $.exit(1)
+	  }
 
-      if (!tab.visible()) {
-        win.currentTab = tab
-      }
+	  if (tabIdx == 0) { // Activate window
+	    activateWindow(winIdx)
+	    return
+	  }
 
-    }
+	  // Find tab to activate
+	  try {
+	    var tab = win.tabs[tabIdx-1]()
+	  }
+	  catch (e) {
+	    console.log('Invalid tab for window ' + winIdx + ': ' + tabIdx)
+	    $.exit(1)
+	  }
 
-    function run(argv) {
-      var win = 0,
-        tab = 0;
+	  // Activate window and tab if it's not the current tab
+	  activateWindow(winIdx)
+	  if (!tab.visible()) {
+	    win.currentTab = tab
+	  }
 
-      win = parseInt(argv[0], 10)
-      if (argv.length > 1) {
-        tab = parseInt(argv[1], 10)
-      }
+	}
 
-      if (isNaN(win)) {
-        console.log('Invalid window: ' + win)
-        $.exit(1)
-      }
+	// run | CLI entry point
+	function run(argv) {
+	  var win = 0,
+	    tab = 0;
 
-      if (isNaN(tab)) {
-        console.log('Invalid tab: ' + tab)
-        $.exit(1)
-      }
+	  win = parseInt(argv[0], 10)
+	  if (argv.length > 1) {
+	    tab = parseInt(argv[1], 10)
+	  }
 
-      activateTab(win, tab)
-    }
+	  if (isNaN(win)) {
+	    console.log('Invalid window: ' + win)
+	    $.exit(1)
+	  }
+
+	  if (isNaN(tab)) {
+	    console.log('Invalid tab: ' + tab)
+	    $.exit(1)
+	  }
+
+	  activateTab(win, tab)
+	}
     `
 
 	jsClose = `
@@ -282,6 +292,7 @@ type Tab struct {
 	WindowIndex int
 	Title       string
 	URL         string
+	Active      bool
 }
 
 // Window is a Safari window.

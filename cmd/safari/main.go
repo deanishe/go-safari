@@ -279,7 +279,7 @@ func newJSONFolder(f *safari.Folder) *jsonFolder {
 // doListTabs prints a tree of Safari's Bookmarks Bar to STDOUT.
 func doListBookmarks() error {
 
-	p, err := safari.NewParser(safari.BookmarksPath)
+	p, err := safari.New(nil)
 	if err != nil {
 		return err
 	}
@@ -313,7 +313,7 @@ func flattenFolderTree(f *safari.Folder) []*safari.Folder {
 // doListTabs prints a tree of the folders within Safari's Bookmarks Bar to STDOUT.
 func doListFolders() error {
 
-	p, err := safari.NewParser(safari.BookmarksPath)
+	p, err := safari.New(nil)
 	if err != nil {
 		return err
 	}
@@ -336,7 +336,7 @@ func doListFolders() error {
 // doListReadingList prints the titles of the items in Safari's Reading List.
 func doListReadingList() error {
 
-	p, err := safari.NewParser(safari.BookmarksPath)
+	p, err := safari.New(nil)
 	if err != nil {
 		return err
 	}

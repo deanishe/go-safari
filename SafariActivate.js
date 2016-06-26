@@ -9,9 +9,23 @@
 
 ObjC.import('stdlib')
 
+var safari = Application('Safari')
+safari.includeStandardAdditions = true
+
+// activateWindow | Activate Safari and bring the specified window to the front.
+function activateWindow(winIdx) {
+    var win = safari.windows[winIdx-1]()
+
+    if (winIdx != 1) {
+        win.visible = false
+        win.visible = true
+    }
+
+    safari.activate()
+}
+
+// activateTab | Activate Safari, bring window to front and make specified tab active.
 function activateTab(winIdx, tabIdx) {
-  var safari = Application('Safari')
-  safari.includeStandardAdditions = true
 
   try {
     var win = safari.windows[winIdx-1]()
@@ -22,10 +36,7 @@ function activateTab(winIdx, tabIdx) {
   }
 
   if (tabIdx == 0) { // Activate window
-    safari.activate()
-    win.visible = false
-    win.visible = true
-
+    activateWindow(winIdx)
     return
   }
 
@@ -39,16 +50,14 @@ function activateTab(winIdx, tabIdx) {
   }
 
   // Activate window and tab if it's not the current tab
-  safari.activate()
-  win.visible = false
-  win.visible = true
-
+  activateWindow(winIdx)
   if (!tab.visible()) {
     win.currentTab = tab
   }
 
 }
 
+// run | CLI entry point
 function run(argv) {
   var win = 0,
     tab = 0;
