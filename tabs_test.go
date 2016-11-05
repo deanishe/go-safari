@@ -35,15 +35,14 @@ func TestWindows(t *testing.T) {
 				t.Error("Tab index is 0")
 			}
 			if tab.Title == "" {
-				t.Error("Tab has no title")
+				t.Errorf("Tab %dx%d has no title", w.Index, tab.Index)
 			}
 			if tab.URL == "" {
-				t.Error("Tab has no URL")
+				t.Errorf("Tab %dx%d has no URL", w.Index, tab.Index)
 			}
 			if tab.WindowIndex != w.Index {
 				t.Errorf("WindowIndex != w.Index. Expected=%v, Got=%v", w.Index, tab.WindowIndex)
 			}
 		}
 	}
-
 }

@@ -89,8 +89,8 @@ func TestUIDMaps(t *testing.T) {
 	}
 
 	for _, bm := range p.Bookmarks {
-		if bm != p.uid2Bookmark[bm.UID] {
-			t.Fatalf("Wrong Bookmark returned: %v vs %v", bm, p.uid2Bookmark[bm.UID])
+		if bm != p.uid2Bookmark[bm.uid] {
+			t.Fatalf("Wrong Bookmark returned: %v vs %v", bm, p.uid2Bookmark[bm.uid])
 		}
 	}
 }

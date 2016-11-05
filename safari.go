@@ -59,6 +59,12 @@ var (
 	parser *Parser // Default parser
 )
 
+// Item is a folder or bookmark.
+type Item interface {
+	Title() string
+	UID() string
+}
+
 // RawRL contains the reading list metadata for a RawBookmark.
 type RawRL struct {
 	DateAdded       time.Time
@@ -88,47 +94,59 @@ func (rb *RawBookmark) Title() string {
 
 // Folder is a folder of Bookmarks.
 type Folder struct {
-	Title           string
+	title           string
 	Ancestors       []*Folder   // Last element is this Bookmark's parent
 	Bookmarks       []*Bookmark // Bookmarks within this folder
 	Folders         []*Folder   // Child folders
-	UID             string
+	uid             string
 	isReadingList   bool
 	isBookmarksBar  bool
 	isBookmarksMenu bool
 }
 
-// IsReadingList returns true if this Folder is the user's Reading List.
-func (f *Folder) IsReadingList() bool {
+// Title returns Folder title and implements Item.
+func (f Folder) Title() string { return f.title }
+
+// UID returns Folder title and implements Item.
+func (f Folder) UID() string { return f.uid }
+
+// IsReadingList returns true if this Folder is the uidser's Reading List.
+func (f Folder) IsReadingList() bool {
 	return f.isReadingList
 }
 
 // IsBookmarksBar returns true if this Folder is the users's BookmarksBar.
-func (f *Folder) IsBookmarksBar() bool {
+func (f Folder) IsBookmarksBar() bool {
 	return f.isBookmarksBar
 }
 
 // IsBookmarksMenu returns true if this Folder is the users's BookmarksMenu.
-func (f *Folder) IsBookmarksMenu() bool {
+func (f Folder) IsBookmarksMenu() bool {
 	return f.isBookmarksMenu
 }
 
 // Bookmark is a Safari bookmark.
 type Bookmark struct {
-	Title     string
+	title     string
 	URL       string
 	Ancestors []*Folder // Last element is this Bookmark's parent
 	Preview   string
-	UID       string
+	uid       string
 }
 
+// Title returns Bookmark title and implements Item.
+func (bm Bookmark) Title() string { return bm.title }
+
+// UID returns Bookmark title and implements Item.
+func (bm Bookmark) UID() string { return bm.uid }
+
 // Folder returns Bookmark's containing folder.
-func (bm *Bookmark) Folder() *Folder {
+func (bm Bookmark) Folder() *Folder {
 	return bm.Ancestors[len(bm.Ancestors)-1]
 }
 
 // InReadingList returns true if Bookmark is from the Reading List.
-func (bm *Bookmark) InReadingList() bool {
+func (bm Bookmark) InReadingList() bool {
 	return bm.Folder().IsReadingList()
 }
 
@@ -220,9 +238,9 @@ func (p *Parser) parseRaw(root *RawBookmark, ancestors []*Folder) error {
 		case WebBookmarkTypeList: // Folder
 
 			f := &Folder{
-				Title:     rb.Title(),
+				title:     rb.Title(),
 				Ancestors: ancestors,
-				UID:       rb.UUID,
+				uid:       rb.UUID,
 			}
 
 			// Add all folders to Parser
@@ -232,25 +250,25 @@ func (p *Parser) parseRaw(root *RawBookmark, ancestors []*Folder) error {
 
 			if len(ancestors) == 0 { // Check if it's a special folder
 
-				switch f.Title {
+				switch f.Title() {
 
 				case NameBookmarksBar:
-					f.Title = "Favorites"
+					f.title = "Favorites"
 					f.isBookmarksBar = true
 					p.BookmarksBar = f
 
 				case NameBookmarksMenu:
-					f.Title = "Bookmarks Menu"
+					f.title = "Bookmarks Menu"
 					f.isBookmarksMenu = true
 					p.BookmarksMenu = f
 
 				case NameReadingList:
-					f.Title = "Reading List"
+					f.title = "Reading List"
 					f.isReadingList = true
 					p.ReadingList = f
 
 				default:
-					log.Printf("Unknown top-Level folder: %s", f.Title)
+					log.Printf("Unknown top-Level folder: %s", f.Title())
 				}
 
 			} else { // Just some normal folder
@@ -269,10 +287,10 @@ func (p *Parser) parseRaw(root *RawBookmark, ancestors []*Folder) error {
 			}
 
 			bm := &Bookmark{
-				Title:     rb.Title(),
+				title:     rb.Title(),
 				URL:       rb.URL,
 				Ancestors: ancestors,
-				UID:       rb.UUID,
+				uid:       rb.UUID,
 			}
 
 			p.uid2Bookmark[rb.UUID] = bm

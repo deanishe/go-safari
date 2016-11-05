@@ -122,7 +122,7 @@ func (n *node) prettyPrint(indent string, last bool, root bool) {
 // nodeTree builds a tree of nodes for Folder f.
 func nodeTree(f *safari.Folder, includeBookmarks bool) *node {
 	n := &node{
-		name:   f.Title + "/",
+		name:   f.Title() + "/",
 		last:   true,
 		colour: yellow,
 	}
@@ -140,7 +140,7 @@ func nodeTree(f *safari.Folder, includeBookmarks bool) *node {
 			if strings.HasPrefix(bm.URL, "javascript:") {
 				continue
 			}
-			n2 := &node{name: bm.Title, colour: blue}
+			n2 := &node{name: bm.Title(), colour: blue}
 			n2.last = (i == len(f.Bookmarks)-1)
 			n.children = append(n.children, n2)
 		}
@@ -238,14 +238,14 @@ type jsonBookmark struct {
 func newJSONBookmark(bm *safari.Bookmark) *jsonBookmark {
 	var ancestors []string
 	for _, f := range bm.Ancestors {
-		ancestors = append(ancestors, f.Title)
+		ancestors = append(ancestors, f.Title())
 	}
 	return &jsonBookmark{
-		Title:     bm.Title,
+		Title:     bm.Title(),
 		URL:       bm.URL,
 		Ancestors: ancestors,
 		Preview:   bm.Preview,
-		UID:       bm.UID}
+		UID:       bm.UID()}
 
 }
 
@@ -260,10 +260,10 @@ type jsonFolder struct {
 func newJSONFolder(f *safari.Folder) *jsonFolder {
 	var ancestors []string
 	for _, f2 := range f.Ancestors {
-		ancestors = append(ancestors, f2.Title)
+		ancestors = append(ancestors, f2.Title())
 	}
 	jf := &jsonFolder{
-		Title:     f.Title,
+		Title:     f.Title(),
 		Ancestors: ancestors,
 		Bookmarks: []*jsonBookmark{},
 	}
