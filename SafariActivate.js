@@ -14,14 +14,14 @@ safari.includeStandardAdditions = true
 
 // activateWindow | Activate Safari and bring the specified window to the front.
 function activateWindow(winIdx) {
-    var win = safari.windows[winIdx-1]()
+  var win = safari.windows[winIdx-1]()
 
-    if (winIdx != 1) {
-        win.visible = false
-        win.visible = true
-    }
+  if (winIdx != 1) {
+    win.visible = false
+    win.visible = true
+  }
 
-    safari.activate()
+  safari.activate()
 }
 
 // activateTab | Activate Safari, bring window to front and make specified tab active.

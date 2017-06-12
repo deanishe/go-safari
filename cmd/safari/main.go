@@ -20,7 +20,7 @@ import (
 	"github.com/fatih/color"
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"gogs.deanishe.net/deanishe/go-safari"
+	"git.deanishe.net/deanishe/go-safari"
 )
 
 const (

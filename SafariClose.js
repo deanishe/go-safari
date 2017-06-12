@@ -18,7 +18,6 @@ var whats = ['win', 'tab', 'tabs-other', 'tabs-left', 'tabs-right'],
   app = Application('Safari');
   app.includeStandardAdditions = true;
 
-
 // usage | Print help to STDOUT
 function usage() {
 
@@ -36,7 +35,6 @@ function usage() {
   console.log('    -h    Show this help message and exit.');
 
 }
-
 
 // closeWindow | Close the specified Safari window
 function closeWindow(winIdx) {
@@ -68,7 +66,6 @@ function closeTabs(winIdx, tabFunc) {
   }
 
 }
-
 
 function run(argv) {
   var what = argv[0],

@@ -45,7 +45,7 @@ function getWindows() {
         'url': t.url(),
         'index': j+1,
         'windowIndex': i+1,
-        'active': j+1 === data['activeTab']
+	'active': j+1 === data['activeTab']
       })
     }
 
