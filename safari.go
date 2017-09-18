@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kballard/go-osx-plist"
+	"github.com/DHowett/go-plist"
 )
 
 // Types of entries in Bookmarks.plist.

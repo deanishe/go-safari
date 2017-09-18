@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
-	"time"
 
 	"github.com/juju/deputy"
 )
@@ -135,7 +134,6 @@ func runJXA(script string, argv ...string) ([]byte, error) {
 	d := deputy.Deputy{
 		Errors:    deputy.FromStderr,
 		StdoutLog: func(b []byte) { data = append(data, b...) },
-		Timeout:   time.Second * 5,
 	}
 
 	cmd := "/usr/bin/osascript"
