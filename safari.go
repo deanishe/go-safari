@@ -45,16 +45,11 @@ const (
 	TypeBookmark = "bookmark"
 )
 
+// Default options.
 var (
-
-	// DefaultOptions are used to create the default parser
-	DefaultOptions = &Options{
-		// BookmarksPath is the path to Safari's exported bookmarks file on OS X
-		BookmarksPath: filepath.Join(os.Getenv("HOME"), "Library/Safari/Bookmarks.plist"),
-		// CloudTabsPath is the path to Safari's iCloud tabs file on OS X
-		CloudTabsPath:      filepath.Join(os.Getenv("HOME"), "Library/SyncedPreferences/com.apple.Safari.plist"),
-		IgnoreBookmarklets: false,
-	}
+	DefaultBookmarksPath      = filepath.Join(os.Getenv("HOME"), "Library/Safari/Bookmarks.plist")
+	DefaultCloudTabsPath      = filepath.Join(os.Getenv("HOME"), "Library/SyncedPreferences/com.apple.Safari.plist")
+	DefaultIgnoreBookmarklets = false
 
 	parser *Parser // Default parser
 )
@@ -105,23 +100,23 @@ type Folder struct {
 }
 
 // Title returns Folder title and implements Item.
-func (f Folder) Title() string { return f.title }
+func (f *Folder) Title() string { return f.title }
 
 // UID returns Folder title and implements Item.
-func (f Folder) UID() string { return f.uid }
+func (f *Folder) UID() string { return f.uid }
 
 // IsReadingList returns true if this Folder is the uidser's Reading List.
-func (f Folder) IsReadingList() bool {
+func (f *Folder) IsReadingList() bool {
 	return f.isReadingList
 }
 
 // IsBookmarksBar returns true if this Folder is the users's BookmarksBar.
-func (f Folder) IsBookmarksBar() bool {
+func (f *Folder) IsBookmarksBar() bool {
 	return f.isBookmarksBar
 }
 
 // IsBookmarksMenu returns true if this Folder is the users's BookmarksMenu.
-func (f Folder) IsBookmarksMenu() bool {
+func (f *Folder) IsBookmarksMenu() bool {
 	return f.isBookmarksMenu
 }
 
@@ -135,26 +130,42 @@ type Bookmark struct {
 }
 
 // Title returns Bookmark title and implements Item.
-func (bm Bookmark) Title() string { return bm.title }
+func (bm *Bookmark) Title() string { return bm.title }
 
 // UID returns Bookmark title and implements Item.
-func (bm Bookmark) UID() string { return bm.uid }
+func (bm *Bookmark) UID() string { return bm.uid }
 
 // Folder returns Bookmark's containing folder.
-func (bm Bookmark) Folder() *Folder {
+func (bm *Bookmark) Folder() *Folder {
 	return bm.Ancestors[len(bm.Ancestors)-1]
 }
 
 // InReadingList returns true if Bookmark is from the Reading List.
-func (bm Bookmark) InReadingList() bool {
+func (bm *Bookmark) InReadingList() bool {
 	return bm.Folder().IsReadingList()
 }
 
-// Options contains Parser options. Pass to New().
-type Options struct {
-	BookmarksPath      string // Path to a Safari bookmarks plist
-	CloudTabsPath      string // Path to a Safari iCloud tabs plist
-	IgnoreBookmarklets bool
+// IsBookmarklet returns true if Bookmark is a bookmarklet.
+func (bm *Bookmark) IsBookmarklet() bool {
+	return strings.HasPrefix(bm.URL, "javascript:")
+}
+
+// Option sets a Parser option.
+type Option func(*Parser)
+
+// BookmarksPath sets the path to the Safari bookmarks plist.
+func BookmarksPath(path string) Option {
+	return func(p *Parser) { p.BookmarksPath = path }
+}
+
+// CloudTabsPath sets the path to the Safari iCloud tabs plist.
+func CloudTabsPath(path string) Option {
+	return func(p *Parser) { p.CloudTabsPath = path }
+}
+
+// IgnoreBookmarklets tells parser whether to ignore bookmarklets.
+func IgnoreBookmarklets(ignore bool) Option {
+	return func(p *Parser) { p.IgnoreBookmarklets = ignore }
 }
 
 // Parser unmarshals a Bookmarks.plist.
@@ -175,19 +186,19 @@ type Parser struct {
 }
 
 // New unmarshals a Bookmarks.plist file.
-func New(opt *Options) (*Parser, error) {
-
-	if opt == nil {
-		opt = DefaultOptions
-	}
+func New(opts ...Option) (*Parser, error) {
 
 	p := &Parser{
-		BookmarksPath:      opt.BookmarksPath,
-		CloudTabsPath:      opt.CloudTabsPath,
-		IgnoreBookmarklets: opt.IgnoreBookmarklets,
+		BookmarksPath:      DefaultBookmarksPath,
+		CloudTabsPath:      DefaultCloudTabsPath,
+		IgnoreBookmarklets: DefaultIgnoreBookmarklets,
 		uid2Folder:         map[string]*Folder{},
 		uid2Bookmark:       map[string]*Bookmark{},
 		uid2Type:           map[string]string{},
+	}
+
+	for _, opt := range opts {
+		opt(p)
 	}
 
 	if err := p.Parse(); err != nil {
@@ -233,7 +244,6 @@ func (p *Parser) parseRaw(root *RawBookmark, ancestors []*Folder) error {
 
 		case WebBookmarkTypeProxy: // Ignore. Only History, which is empty
 			continue
-			// log.Printf("proxy=%s", rb.Title())
 
 		case WebBookmarkTypeList: // Folder
 
@@ -338,7 +348,7 @@ func (p *Parser) FilterBookmarks(accept func(bm *Bookmark) bool) []*Bookmark {
 // FindBookmark returns the first Bookmark for which accept(bm) returns true.
 func (p *Parser) FindBookmark(accept func(bm *Bookmark) bool) *Bookmark {
 
-	for _, bm := range Bookmarks() {
+	for _, bm := range p.Bookmarks {
 		if accept(bm) {
 			return bm
 		}
@@ -362,7 +372,7 @@ func (p *Parser) FilterFolders(accept func(f *Folder) bool) []*Folder {
 // FindFolder returns the first Folder for which accept(bm) returns true.
 func (p *Parser) FindFolder(accept func(f *Folder) bool) *Folder {
 
-	for _, f := range Folders() {
+	for _, f := range p.Folders {
 		if accept(f) {
 			return f
 		}
@@ -381,7 +391,7 @@ func getParser() *Parser {
 	if parser != nil {
 		return parser
 	}
-	parser, err := New(DefaultOptions)
+	parser, err := New()
 	if err != nil {
 		panic(err)
 	}
@@ -409,24 +419,16 @@ func FindBookmark(accept func(bm *Bookmark) bool) *Bookmark { return getParser()
 func BookmarkForUID(uid string) *Bookmark { return getParser().uid2Bookmark[uid] }
 
 // BookmarksBar returns user's Bookmarks Bar folder.
-func BookmarksBar() *Folder {
-	return getParser().BookmarksBar
-}
+func BookmarksBar() *Folder { return getParser().BookmarksBar }
 
 // BookmarksMenu returns user's Bookmarks Menu folder.
-func BookmarksMenu() *Folder {
-	return getParser().BookmarksMenu
-}
+func BookmarksMenu() *Folder { return getParser().BookmarksMenu }
 
 // Folders returns all a user's bookmark folders.
-func Folders() []*Folder {
-	return getParser().Folders
-}
+func Folders() []*Folder { return getParser().Folders }
 
 // ReadingList returns user's Reading List folder.
-func ReadingList() *Folder {
-	return getParser().ReadingList
-}
+func ReadingList() *Folder { return getParser().ReadingList }
 
 // FindFolder returns the first Folder for which accept(f) returns true.
 // Returns nil if no match is found.

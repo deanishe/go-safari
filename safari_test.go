@@ -23,7 +23,7 @@ import "testing"
 
 // TestNewParser asserts that Bookmarks.plist is found and read.
 func TestNewParser(t *testing.T) {
-	p, err := New(nil)
+	p, err := New()
 	if err != nil {
 		t.Fatalf("Error reading Bookmarks.plist: %v", err)
 	}
@@ -34,7 +34,7 @@ func TestNewParser(t *testing.T) {
 
 // TestParserParse tests that Bookmarks and ReadingList are populated.
 func TestParserParse(t *testing.T) {
-	p, err := New(nil)
+	p, err := New()
 	if err != nil {
 		t.Fatalf("Error reading Bookmarks.plist: %v", err)
 	}
@@ -48,7 +48,7 @@ func TestParserParse(t *testing.T) {
 
 // TestParserFolders tests that folders are populated.
 func TestParserFolders(t *testing.T) {
-	p, err := New(nil)
+	p, err := New()
 	if err != nil {
 		t.Fatalf("Error reading Bookmarks.plist: %v", err)
 	}
@@ -68,7 +68,7 @@ func TestParserFolders(t *testing.T) {
 
 // TestUIDMaps tests that uid2XYZ maps are populated
 func TestUIDMaps(t *testing.T) {
-	p, err := New(nil)
+	p, err := New()
 	if err != nil {
 		t.Fatalf("Error reading Bookmarks.plist: %v", err)
 	}
