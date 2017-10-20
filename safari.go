@@ -208,6 +208,13 @@ func New(opts ...Option) (*Parser, error) {
 	return p, nil
 }
 
+// Configure applies an Option to Parser.
+func (p *Parser) Configure(opts ...Option) {
+	for _, opt := range opts {
+		opt(p)
+	}
+}
+
 // Parse unmarshals a Bookmarks.plist.
 func (p *Parser) Parse() error {
 	// TODO: Make Bookmarks.plist optional and add iCloud tabs
@@ -397,6 +404,9 @@ func getParser() *Parser {
 	}
 	return parser
 }
+
+// Configure sets options on the default parser.
+func Configure(opts ...Option) { getParser().Configure(opts...) }
 
 // Bookmarks returns all the user's bookmarks.
 func Bookmarks() []*Bookmark { return getParser().Bookmarks }
