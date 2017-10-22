@@ -32,6 +32,14 @@ func (t *Tab) RunJS(js string) error {
 	return err
 }
 
+// Activate activates this tab.
+func (t *Tab) Activate() error {
+	if t.Active {
+		return nil
+	}
+	return Activate(t.WindowIndex, t.Index)
+}
+
 // Window is a Safari window.
 type Window struct {
 	Index     int

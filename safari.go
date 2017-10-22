@@ -15,8 +15,10 @@ Mac only.
 package safari
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -142,6 +144,15 @@ func (bm *Bookmark) InReadingList() bool {
 // IsBookmarklet returns true if Bookmark is a bookmarklet.
 func (bm *Bookmark) IsBookmarklet() bool {
 	return strings.HasPrefix(bm.URL, "javascript:")
+}
+
+// ToJS returns JavaScript embedded in the URL. Returns an error if the
+// bookmark isn't a bookmarklet (or can't be parsed).
+func (bm *Bookmark) ToJS() (string, error) {
+	if !bm.IsBookmarklet() {
+		return "", errors.New("not a bookmarklet")
+	}
+	return url.PathUnescape(bm.URL[11:])
 }
 
 // Option sets a Parser option.
