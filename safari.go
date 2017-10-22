@@ -106,19 +106,13 @@ func (f *Folder) Title() string { return f.title }
 func (f *Folder) UID() string { return f.uid }
 
 // IsReadingList returns true if this Folder is the uidser's Reading List.
-func (f *Folder) IsReadingList() bool {
-	return f.isReadingList
-}
+func (f *Folder) IsReadingList() bool { return f.isReadingList }
 
 // IsBookmarksBar returns true if this Folder is the users's BookmarksBar.
-func (f *Folder) IsBookmarksBar() bool {
-	return f.isBookmarksBar
-}
+func (f *Folder) IsBookmarksBar() bool { return f.isBookmarksBar }
 
 // IsBookmarksMenu returns true if this Folder is the users's BookmarksMenu.
-func (f *Folder) IsBookmarksMenu() bool {
-	return f.isBookmarksMenu
-}
+func (f *Folder) IsBookmarksMenu() bool { return f.isBookmarksMenu }
 
 // Bookmark is a Safari bookmark.
 type Bookmark struct {
@@ -412,9 +406,7 @@ func Configure(opts ...Option) { getParser().Configure(opts...) }
 func Bookmarks() []*Bookmark { return getParser().Bookmarks }
 
 // BookmarksRL returns bookmarks for the user's Reading List.
-func BookmarksRL() []*Bookmark {
-	return getParser().BookmarksRL
-}
+func BookmarksRL() []*Bookmark { return getParser().BookmarksRL }
 
 // FilterBookmarks calls Bookmarks() and returns the elements for which accept(bm) returns true.
 func FilterBookmarks(accept func(bm *Bookmark) bool) []*Bookmark {

@@ -25,6 +25,13 @@ type Tab struct {
 	Active      bool
 }
 
+// RunJS executes JavaScript in this tab.
+func (t *Tab) RunJS(js string) error {
+	_, err := runJXA(jsRunJavaScript, fmt.Sprintf("%d", t.WindowIndex),
+		fmt.Sprintf("%d", t.Index), js)
+	return err
+}
+
 // Window is a Safari window.
 type Window struct {
 	Index     int
