@@ -279,7 +279,7 @@ func newJSONFolder(f *safari.Folder) *jsonFolder {
 // doListTabs prints a tree of Safari's Bookmarks Bar to STDOUT.
 func doListBookmarks() error {
 
-	p, err := safari.New(nil)
+	p, err := safari.New()
 	if err != nil {
 		return err
 	}
@@ -313,7 +313,7 @@ func flattenFolderTree(f *safari.Folder) []*safari.Folder {
 // doListTabs prints a tree of the folders within Safari's Bookmarks Bar to STDOUT.
 func doListFolders() error {
 
-	p, err := safari.New(nil)
+	p, err := safari.New()
 	if err != nil {
 		return err
 	}
@@ -336,7 +336,7 @@ func doListFolders() error {
 // doListReadingList prints the titles of the items in Safari's Reading List.
 func doListReadingList() error {
 
-	p, err := safari.New(nil)
+	p, err := safari.New()
 	if err != nil {
 		return err
 	}
@@ -346,7 +346,7 @@ func doListReadingList() error {
 	if outputJSON {
 		output := []*jsonBookmark{}
 		for _, bm := range f.Bookmarks {
-			if strings.HasPrefix(bm.URL, "javascript:") {
+			if bm.IsBookmarklet() {
 				continue
 			}
 			output = append(output, newJSONBookmark(bm))
@@ -358,7 +358,7 @@ func doListReadingList() error {
 	fStr := fmt.Sprintf("[%%%dd] %%s\n", len(fmt.Sprintf("%d", len(f.Bookmarks))))
 
 	for i, bm := range f.Bookmarks {
-		fmt.Printf(fStr, i+1, bm.Title)
+		fmt.Printf(fStr, i+1, bm.Title())
 	}
 	// printFolder(p.BookmarksBar, false)
 
