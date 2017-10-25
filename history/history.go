@@ -62,6 +62,7 @@ func New(filename string) (*History, error) {
 }
 
 // Recent returns the specified number of most recent items from History.
+func Recent(count int) ([]*Entry, error) { return history.Recent(count) }
 func (h *History) Recent(count int) ([]*Entry, error) {
 	q := `
 	SELECT url, visit_time, title
@@ -75,6 +76,7 @@ func (h *History) Recent(count int) ([]*Entry, error) {
 }
 
 // Search searches all History entries.
+func Search(query string) ([]*Entry, error) { return history.Search(query) }
 func (h *History) Search(query string) ([]*Entry, error) {
 	query = "%" + query + "%"
 	q := `
@@ -82,7 +84,7 @@ func (h *History) Search(query string) ([]*Entry, error) {
 		FROM history_items
 			LEFT JOIN history_visits
 				ON history_visits.history_item = history_items.id
-		WHERE title LIKE ? AND url LIKE 'http%'
+		WHERE title <> '' AND title LIKE ? AND url LIKE 'http%'
 		ORDER BY visit_time DESC LIMIT ?`
 
 	return h.query(q, query, MaxSearchResults)
