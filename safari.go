@@ -133,12 +133,19 @@ func (bm *Bookmark) UID() string { return bm.uid }
 
 // Folder returns Bookmark's containing folder.
 func (bm *Bookmark) Folder() *Folder {
+	if len(bm.Ancestors) == 0 {
+		return nil
+	}
 	return bm.Ancestors[len(bm.Ancestors)-1]
 }
 
 // InReadingList returns true if Bookmark is from the Reading List.
 func (bm *Bookmark) InReadingList() bool {
-	return bm.Folder().IsReadingList()
+	f := bm.Folder()
+	if f == nil {
+		return false
+	}
+	return f.IsReadingList()
 }
 
 // IsBookmarklet returns true if Bookmark is a bookmarklet.
@@ -289,8 +296,8 @@ func (p *Parser) parseRaw(root *RawBookmark, ancestors []*Folder) error {
 					f.isReadingList = true
 					p.ReadingList = f
 
-				default:
-					log.Printf("Unknown top-Level folder: %s", f.Title())
+					// default:
+					// 	log.Printf("Unknown top-Level folder: %s", f.Title())
 				}
 
 			} else { // Just some normal folder
@@ -322,14 +329,18 @@ func (p *Parser) parseRaw(root *RawBookmark, ancestors []*Folder) error {
 				bm.Preview = rb.ReadingList.PreviewText
 			}
 
-			par := ancestors[len(ancestors)-1]
-			par.Bookmarks = append(par.Bookmarks, bm)
+			if len(ancestors) > 0 {
+				par := ancestors[len(ancestors)-1]
+				par.Bookmarks = append(par.Bookmarks, bm)
 
-			if ancestors[0].isReadingList {
-				// log.Printf("[ReadingList] + %s", bm.Title)
-				p.BookmarksRL = append(p.BookmarksRL, bm)
-			} else {
-				// log.Printf("%v %s", parents, bm.Title)
+				if ancestors[0].isReadingList {
+					// log.Printf("[ReadingList] + %s", bm.Title)
+					p.BookmarksRL = append(p.BookmarksRL, bm)
+				} else {
+					// log.Printf("%v %s", parents, bm.Title)
+					p.Bookmarks = append(p.Bookmarks, bm)
+				}
+			} else { // Top-level bookmark
 				p.Bookmarks = append(p.Bookmarks, bm)
 			}
 
