@@ -16,6 +16,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	// sqlite3 registers itself with sql
@@ -78,16 +79,29 @@ func (h *History) Recent(count int) ([]*Entry, error) {
 // Search searches all History entries.
 func Search(query string) ([]*Entry, error) { return history.Search(query) }
 func (h *History) Search(query string) ([]*Entry, error) {
-	query = "%" + query + "%"
-	q := `
+	var (
+		args []interface{}
+		// Start of SQL query
+		q = `
 	SELECT url, visit_time, title
 		FROM history_items
 			LEFT JOIN history_visits
 				ON history_visits.history_item = history_items.id
-		WHERE title <> '' AND title LIKE ? AND url LIKE 'http%'
+		WHERE title <> '' AND url LIKE 'http%'`
+	)
+
+	// Add condition and placeholder for each search term
+	for _, s := range strings.Fields(query) {
+		args = append(args, "%"+s+"%")
+		q = q + ` AND title LIKE ?`
+	}
+
+	// Finish query
+	q = q + `
 		ORDER BY visit_time DESC LIMIT ?`
 
-	return h.query(q, query, MaxSearchResults)
+	args = append(args, MaxSearchResults)
+	return h.query(q, args...)
 }
 
 // query runs an SQL query against the database.
