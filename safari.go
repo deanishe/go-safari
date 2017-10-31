@@ -97,10 +97,10 @@ func (rb *rawBookmark) Title() string {
 	return rb.URIDict["title"]
 }
 
-// Folder is a folder of Bookmarks.
+// Folder contains Bookmarks and other Folders.
 type Folder struct {
 	title           string
-	Ancestors       []*Folder   // Last element is this Folder's parent
+	Ancestors       []*Folder   // Last element is this Folder's parent. May be empty.
 	Bookmarks       []*Bookmark // Bookmarks within this folder
 	Folders         []*Folder   // Child folders
 	uid             string
@@ -115,7 +115,7 @@ func (f *Folder) Title() string { return f.title }
 // UID returns Folder title and implements Item.
 func (f *Folder) UID() string { return f.uid }
 
-// IsReadingList returns true if this Folder is the uidser's Reading List.
+// IsReadingList returns true if this Folder is the user's Reading List.
 func (f *Folder) IsReadingList() bool { return f.isReadingList }
 
 // IsBookmarksBar returns true if this Folder is the users's BookmarksBar.
