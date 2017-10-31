@@ -8,9 +8,17 @@
 // TODO: Add iCloud devices & tabs as Folders and Bookmarks
 
 /*
-Package safari provides access to Safari's windows, tabs, bookmarks etc.
+Package safari provides access to Safari's windows, tabs, bookmarks etc. on the Mac.
 
-Mac only.
+Package-level functions call the corresponding methods on the default Parser, which
+reads the standard Safari bookmarks file with the default options.
+
+The history subpackage provides access to Safari's history.
+
+The safari command is a simple command-line program that implements some of the
+library's features.
+
+Tested on Sierra and High Sierra.
 */
 package safari
 
@@ -50,8 +58,8 @@ const (
 // Default options.
 var (
 	DefaultBookmarksPath      = filepath.Join(os.Getenv("HOME"), "Library/Safari/Bookmarks.plist")
-	DefaultCloudTabsPath      = filepath.Join(os.Getenv("HOME"), "Library/SyncedPreferences/com.apple.Safari.plist")
 	DefaultIgnoreBookmarklets = false
+	// DefaultCloudTabsPath      = filepath.Join(os.Getenv("HOME"), "Library/SyncedPreferences/com.apple.Safari.plist")
 
 	parser *Parser // Default parser
 )
@@ -62,27 +70,27 @@ type Item interface {
 	UID() string
 }
 
-// RawRL contains the reading list metadata for a RawBookmark.
-type RawRL struct {
+// rawRL contains the reading list metadata for a RawBookmark.
+type rawRL struct {
 	DateAdded       time.Time
 	DateLastFetched time.Time
 	DateLastViewed  time.Time
 	PreviewText     string
 }
 
-// RawBookmark is the data model used in the Bookmarks.plist file.
-type RawBookmark struct {
+// rawBookmark is the data model used in the Bookmarks.plist file.
+type rawBookmark struct {
 	RawTitle    string            `plist:"Title"`
 	Type        string            `plist:"WebBookmarkType"`
 	URL         string            `plist:"URLString"`
 	UUID        string            `plist:"WebBookmarkUUID"`
-	ReadingList *RawRL            `plist:"ReadingList"`
+	ReadingList *rawRL            `plist:"ReadingList"`
 	URIDict     map[string]string `plist:"URIDictionary"`
-	Children    []*RawBookmark
+	Children    []*rawBookmark
 }
 
 // Title returns either RawTitle (if set) or the title from URIDict.
-func (rb *RawBookmark) Title() string {
+func (rb *rawBookmark) Title() string {
 	if rb.RawTitle != "" {
 		return rb.RawTitle
 	}
@@ -170,10 +178,12 @@ func BookmarksPath(path string) Option {
 	return func(p *Parser) { p.BookmarksPath = path }
 }
 
+/*
 // CloudTabsPath sets the path to the Safari iCloud tabs plist.
 func CloudTabsPath(path string) Option {
 	return func(p *Parser) { p.CloudTabsPath = path }
 }
+*/
 
 // IgnoreBookmarklets tells parser whether to ignore bookmarklets.
 func IgnoreBookmarklets(ignore bool) Option {
@@ -183,15 +193,14 @@ func IgnoreBookmarklets(ignore bool) Option {
 // Parser unmarshals a Bookmarks.plist.
 type Parser struct {
 	BookmarksPath      string
-	CloudTabsPath      string
 	IgnoreBookmarklets bool         // Whether to ignore bookmarklets
-	Raw                *RawBookmark // Bookmarks.plist data in "native" format
 	Bookmarks          []*Bookmark  // Flat list of all bookmarks (excl. Reading List)
 	BookmarksRL        []*Bookmark  // Flat list of all Reading List bookmarks
 	Folders            []*Folder    // Flat list of all folders
 	BookmarksBar       *Folder      // Folder for user's Bookmarks Bar
 	BookmarksMenu      *Folder      // Folder for user's Bookmarks Menu
 	ReadingList        *Folder      // Folder for user's Reading List
+	raw                *rawBookmark // Bookmarks.plist data in "native" format
 	uid2Folder         map[string]*Folder
 	uid2Bookmark       map[string]*Bookmark
 	uid2Type           map[string]string
@@ -202,16 +211,13 @@ func New(opts ...Option) (*Parser, error) {
 
 	p := &Parser{
 		BookmarksPath:      DefaultBookmarksPath,
-		CloudTabsPath:      DefaultCloudTabsPath,
 		IgnoreBookmarklets: DefaultIgnoreBookmarklets,
 		uid2Folder:         map[string]*Folder{},
 		uid2Bookmark:       map[string]*Bookmark{},
 		uid2Type:           map[string]string{},
 	}
 
-	for _, opt := range opts {
-		opt(p)
-	}
+	p.Configure(opts...)
 
 	if err := p.Parse(); err != nil {
 		return nil, err
@@ -240,15 +246,15 @@ func (p *Parser) Parse() error {
 // parseData does the actual parsing.
 func (p *Parser) parseData(data []byte) error {
 
-	p.Raw = &RawBookmark{}
+	p.raw = &rawBookmark{}
 	p.Bookmarks = []*Bookmark{}
 	p.BookmarksRL = []*Bookmark{}
 
-	if _, err := plist.Unmarshal(data, p.Raw); err != nil {
+	if _, err := plist.Unmarshal(data, p.raw); err != nil {
 		return err
 	}
 
-	if err := p.parseRaw(p.Raw, []*Folder{}); err != nil {
+	if err := p.parseRaw(p.raw, []*Folder{}); err != nil {
 		return err
 	}
 
@@ -256,7 +262,7 @@ func (p *Parser) parseData(data []byte) error {
 }
 
 // parse flattens the raw tree and parses the RawBookmarks into Bookmarks.
-func (p *Parser) parseRaw(root *RawBookmark, ancestors []*Folder) error {
+func (p *Parser) parseRaw(root *rawBookmark, ancestors []*Folder) error {
 
 	for _, rb := range root.Children {
 		switch rb.Type {

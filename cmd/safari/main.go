@@ -6,7 +6,10 @@
 // Created on 2016-05-29
 //
 
-// Command safari is an Alfred 3 workflow for manipulating Safari and searching its data.
+// Command safari lists Safari's bookmarks and reading list, and lists, activates and closes tabs.
+//
+// The list command outputs human-readable data by default, but can also
+// generate JSON for use from other programs.
 package main
 
 import (
@@ -432,15 +435,6 @@ func main() {
 	}
 
 	switch cmd {
-
-	// case bookmarksCmd.FullCommand():
-	// 	err = doListBookmarks()
-	//
-	// case foldersCmd.FullCommand():
-	// 	err = doListFolders()
-	//
-	// case tabsCmd.FullCommand():
-	// 	err = doListTabs()
 
 	case activateCmd.FullCommand():
 		err = doActivate()

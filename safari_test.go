@@ -27,7 +27,7 @@ func TestNewParser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading Bookmarks.plist: %v", err)
 	}
-	if len(p.Raw.Children) == 0 {
+	if len(p.raw.Children) == 0 {
 		t.Fatal("Root has 0 children")
 	}
 }

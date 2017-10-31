@@ -9,7 +9,10 @@
 // Package history provides access to Safari's history.
 //
 // As the exported history was removed in High Sierra, this package
-// accesses Safari's private sqlite3 database.
+// accesses Safari's private SQLite database.
+//
+// The package-level functions call methods on the default History,
+// which is initialised with the default Safari history database.
 package history
 
 import (
@@ -63,6 +66,9 @@ func New(filename string) (*History, error) {
 }
 
 // Recent returns the specified number of most recent items from History.
+// Entries without a title or with a non-HTTP* scheme are ignored.
+//
+// NOTE: The results will often contain many duplicates.
 func Recent(count int) ([]*Entry, error) { return history.Recent(count) }
 func (h *History) Recent(count int) ([]*Entry, error) {
 	q := `
@@ -77,6 +83,12 @@ func (h *History) Recent(count int) ([]*Entry, error) {
 }
 
 // Search searches all History entries.
+// Entries without a title or with a non-HTTP* scheme are ignored.
+//
+// The query is split into individual words, which are combined with AND:
+//
+//     AND title LIKE %word1% AND title LIKE %word2% etc.
+//
 func Search(query string) ([]*Entry, error) { return history.Search(query) }
 func (h *History) Search(query string) ([]*Entry, error) {
 	var (
