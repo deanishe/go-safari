@@ -64,7 +64,7 @@ var (
 	parser *Parser // Default parser
 )
 
-// Item is a folder or bookmark.
+// Item is implemented by Folder and Bookmark.
 type Item interface {
 	Title() string
 	UID() string
@@ -100,7 +100,7 @@ func (rb *rawBookmark) Title() string {
 // Folder is a folder of Bookmarks.
 type Folder struct {
 	title           string
-	Ancestors       []*Folder   // Last element is this Bookmark's parent
+	Ancestors       []*Folder   // Last element is this Folder's parent
 	Bookmarks       []*Bookmark // Bookmarks within this folder
 	Folders         []*Folder   // Child folders
 	uid             string
