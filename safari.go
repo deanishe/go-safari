@@ -139,7 +139,7 @@ func (bm *Bookmark) Title() string { return bm.title }
 // UID returns Bookmark title and implements Item.
 func (bm *Bookmark) UID() string { return bm.uid }
 
-// Folder returns Bookmark's containing folder.
+// Folder returns Folder containing Bookmark. May be nil.
 func (bm *Bookmark) Folder() *Folder {
 	if len(bm.Ancestors) == 0 {
 		return nil
@@ -162,7 +162,7 @@ func (bm *Bookmark) IsBookmarklet() bool {
 }
 
 // ToJS returns JavaScript embedded in the URL. Returns an error if the
-// bookmark isn't a bookmarklet (or can't be parsed).
+// bookmark isn't a bookmarklet or can't be parsed.
 func (bm *Bookmark) ToJS() (string, error) {
 	if !bm.IsBookmarklet() {
 		return "", errors.New("not a bookmarklet")
@@ -186,11 +186,11 @@ func CloudTabsPath(path string) Option {
 */
 
 // IgnoreBookmarklets tells parser whether to ignore bookmarklets.
-func IgnoreBookmarklets(ignore bool) Option {
-	return func(p *Parser) { p.IgnoreBookmarklets = ignore }
+func IgnoreBookmarklets(v bool) Option {
+	return func(p *Parser) { p.IgnoreBookmarklets = v }
 }
 
-// Parser unmarshals a Bookmarks.plist.
+// Parser unmarshals a Bookmarks.plist file.
 type Parser struct {
 	BookmarksPath      string
 	IgnoreBookmarklets bool         // Whether to ignore bookmarklets
@@ -206,7 +206,7 @@ type Parser struct {
 	uid2Type           map[string]string
 }
 
-// New unmarshals a Bookmarks.plist file.
+// New creates a new Parser with the specified options and calls Parser.Parse().
 func New(opts ...Option) (*Parser, error) {
 
 	p := &Parser{
@@ -358,7 +358,7 @@ func (p *Parser) parseRaw(root *rawBookmark, ancestors []*Folder) error {
 	return nil
 }
 
-// BookmarkForUID returns Bookmark with given UID or nil.
+// BookmarkForUID returns Bookmark with given UID (or nil if no such bookmark is found).
 func (p *Parser) BookmarkForUID(uid string) *Bookmark { return p.uid2Bookmark[uid] }
 
 // FilterBookmarks returns all Bookmarks for which accept(bm) returns true.
@@ -409,7 +409,7 @@ func (p *Parser) FindFolder(accept func(f *Folder) bool) *Folder {
 	return nil
 }
 
-// FolderForUID returns Folder with given UID or nil.
+// FolderForUID returns Folder with given UID (or nil if no such folder is found).
 func (p *Parser) FolderForUID(uid string) *Folder { return p.uid2Folder[uid] }
 
 // TypeForUID returns the type of item that UID refers to ("bookmark" or "folder").
@@ -430,7 +430,7 @@ func getParser() *Parser {
 // Configure sets options on the default parser.
 func Configure(opts ...Option) { getParser().Configure(opts...) }
 
-// Bookmarks returns all the user's bookmarks.
+// Bookmarks returns all of the user's bookmarks.
 func Bookmarks() []*Bookmark { return getParser().Bookmarks }
 
 // BookmarksRL returns bookmarks for the user's Reading List.
@@ -445,7 +445,7 @@ func FilterBookmarks(accept func(bm *Bookmark) bool) []*Bookmark {
 // Returns nil if no match is found.
 func FindBookmark(accept func(bm *Bookmark) bool) *Bookmark { return getParser().FindBookmark(accept) }
 
-// BookmarkForUID returns Bookmark with UID uid or nil.
+// BookmarkForUID returns Bookmark with specified UID or nil.
 func BookmarkForUID(uid string) *Bookmark { return getParser().uid2Bookmark[uid] }
 
 // BookmarksBar returns user's Bookmarks Bar folder.
@@ -454,7 +454,7 @@ func BookmarksBar() *Folder { return getParser().BookmarksBar }
 // BookmarksMenu returns user's Bookmarks Menu folder.
 func BookmarksMenu() *Folder { return getParser().BookmarksMenu }
 
-// Folders returns all a user's bookmark folders.
+// Folders returns all of a user's bookmark folders.
 func Folders() []*Folder { return getParser().Folders }
 
 // ReadingList returns user's Reading List folder.
