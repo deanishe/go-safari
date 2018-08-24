@@ -17,6 +17,7 @@ package history
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -58,7 +59,7 @@ type History struct {
 
 // New creates a new History from a Safari history database.
 func New(filename string) (*History, error) {
-	db, err := sql.Open("sqlite3", filename)
+	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared", filename))
 	if err != nil {
 		return nil, err
 	}
