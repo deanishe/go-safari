@@ -112,7 +112,7 @@ type Folder struct {
 // Title returns Folder title and implements Item.
 func (f *Folder) Title() string { return f.title }
 
-// UID returns Folder title and implements Item.
+// UID returns Folder UID and implements Item.
 func (f *Folder) UID() string { return f.uid }
 
 // IsReadingList returns true if this Folder is the user's Reading List.
@@ -136,7 +136,7 @@ type Bookmark struct {
 // Title returns Bookmark title and implements Item.
 func (bm *Bookmark) Title() string { return bm.title }
 
-// UID returns Bookmark title and implements Item.
+// UID returns Bookmark UID and implements Item.
 func (bm *Bookmark) UID() string { return bm.uid }
 
 // Folder returns Folder containing Bookmark. May be nil.

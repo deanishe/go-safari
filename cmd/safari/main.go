@@ -28,7 +28,7 @@ import (
 
 const (
 	// Version is the version number of the program
-	Version = "0.1.0"
+	Version = "0.2.0"
 )
 
 var (
@@ -40,10 +40,12 @@ var (
 	targetWin, targetTab int
 	listContentType      string
 	closeTargetType      string
+	searchQuery          string
 
 	// Kingpin components
 	app                            *kingpin.Application
 	activateCmd, listCmd, closeCmd *kingpin.CmdClause
+	historyCmd                     *kingpin.CmdClause
 
 	// Colours
 	yellow  = color.New(color.FgYellow)
@@ -91,6 +93,10 @@ func init() {
 			"tl", "tabs-left", "tr", "tabs-right")
 	closeCmd.Arg("window", "The target window.").Default("1").IntVar(&targetWin)
 	closeCmd.Arg("tab", "The target tab.").IntVar(&targetTab)
+
+	// History (search)
+	historyCmd = app.Command("history", "Search Safari history").Alias("h")
+	historyCmd.Arg("query", "Search query").Required().StringVar(&searchQuery)
 }
 
 // node is for pretty-printing trees of colourful strings.
@@ -446,6 +452,11 @@ func main() {
 
 	case listCmd.FullCommand():
 		err = doList()
+		app.FatalIfError(err, "%s", "Safari command failed")
+
+	case historyCmd.FullCommand():
+		err = doSearchHistory()
+		app.FatalIfError(err, "%s", "Safari command failed")
 
 	default:
 		fmt.Printf("json=%v", outputJSON)

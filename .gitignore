@@ -1,4 +1,6 @@
 
+/vendor
+
 # Created by https://www.gitignore.io/api/sublimetext,vim,go
 
 ### SublimeText ###
