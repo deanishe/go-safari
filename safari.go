@@ -161,6 +161,15 @@ func (bm *Bookmark) IsBookmarklet() bool {
 	return strings.HasPrefix(bm.URL, "javascript:")
 }
 
+// Hostname returns the hostname (without port) of Bookmark's URL.
+func (bm *Bookmark) Hostname() (string, error) {
+	u, err := url.Parse(bm.URL)
+	if err != nil {
+		return "", err
+	}
+	return u.Hostname(), nil
+}
+
 // ToJS returns JavaScript embedded in the URL. Returns an error if the
 // bookmark isn't a bookmarklet or can't be parsed.
 func (bm *Bookmark) ToJS() (string, error) {
