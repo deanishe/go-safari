@@ -59,9 +59,9 @@ type History struct {
 
 // New creates a new History from a Safari history database.
 func New(filename string) (*History, error) {
-	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?mode=ro&cache=shared", filename))
+	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?mode=ro&cache=shared&_timeout=9999999&_journal=WAL", filename))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("couldn't open database %s: %s", filename, err)
 	}
 	return &History{db}, nil
 }
@@ -111,7 +111,8 @@ func (h *History) Search(query string) ([]*Entry, error) {
 
 	// Finish query
 	q = q + `
-		ORDER BY visit_time DESC LIMIT ?`
+		ORDER BY visit_time DESC LIMIT ?
+		`
 
 	args = append(args, MaxSearchResults)
 	return h.query(q, args...)
@@ -128,7 +129,7 @@ func (h *History) query(q string, args ...interface{}) ([]*Entry, error) {
 	)
 	rows, err := h.DB.Query(q, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error running query:%s with args: %+v\nerror: %s", q, args, err)
 	}
 	defer rows.Close()
 
