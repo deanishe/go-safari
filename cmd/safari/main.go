@@ -28,7 +28,7 @@ import (
 
 const (
 	// Version is the version number of the program
-	Version = "0.2.0"
+	Version = "0.3.0"
 )
 
 var (
@@ -79,11 +79,11 @@ func init() {
 	activateCmd.Arg("tab", "The tab to activate.").IntVar(&targetTab)
 
 	// List
-	listCmd = app.Command("list", "List Safari bookmarks, folders or tabs.").Alias("l")
+	listCmd = app.Command("list", "List Safari bookmarks, folders, tabs or cloud tabs.").Alias("l")
 	listCmd.Flag("json", "Output JSON, not text.").Short('j').BoolVar(&outputJSON)
-	listCmd.Arg("type", "Type of data to list (bookmarks, folders, readlist or tabs).").
+	listCmd.Arg("type", "Type of data to list (bookmarks, folders, readlist, tabs or cloud-tabs).").
 		Required().
-		EnumVar(&listContentType, "b", "bookmarks", "f", "folders", "r", "readlist", "t", "tabs")
+		EnumVar(&listContentType, "b", "bookmarks", "f", "folders", "r", "readlist", "t", "tabs", "c", "cloud-tabs")
 
 	// Close
 	closeCmd = app.Command("close", "Close Safari windows and/or tabs.").Alias("c")
@@ -396,9 +396,13 @@ func doList() error {
 
 	case "t", "tabs":
 		return doListTabs()
-	}
 
-	return nil
+	case "c", "cloud-tabs":
+		return doListCloudTabs()
+
+	default:
+		return fmt.Errorf("unknown type: %s", listContentType)
+	}
 }
 
 // doClose closes the specified window/tab(s).
