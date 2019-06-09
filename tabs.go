@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/juju/deputy"
+	"github.com/deanishe/deputy"
 )
 
 // Tab is a Safari tab.
