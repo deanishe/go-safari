@@ -9,9 +9,8 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
-	github.com/mattn/go-sqlite3 v1.10.0
+	github.com/mattn/go-sqlite3 v1.14.1
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/sys v0.0.0-20181019160139-8e24a49d80f8 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	howett.net/plist v0.0.0-20181124034731-591f970eefbb
 )
